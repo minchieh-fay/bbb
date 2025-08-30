@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/adshao/go-binance/v2/futures"
@@ -24,14 +26,64 @@ func GetSymbolsList() ([]string, error) {
 			symbolsList = append(symbolsList, symbol.Symbol)
 		}
 	}
+	fmt.Println("total:", len(symbolsList))
+	return symbolsList, nil
+}
+
+func GetSymbolsList1() ([]string, error) {
+	symbols, err := fc.NewListPricesService().Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	var symbolsList []string
+	for _, symbol := range symbols {
+		if strings.HasSuffix(symbol.Symbol, "USDT") {
+			symbolsList = append(symbolsList, symbol.Symbol)
+		}
+	}
+	fmt.Println("total:", len(symbolsList))
 	return symbolsList, nil
 }
 
 func GetSymbolsWithKlines(symbols []string) []*SymbolWithKlines {
+	// 将symbols切换成50个一组
+	var symbolsWithKlines []*SymbolWithKlines
+	var mu sync.Mutex // 添加互斥锁保护共享数据
+
+	var wg sync.WaitGroup
+	var p = 10
+	for i := 0; i < len(symbols); i += p {
+		end := i + p
+		if end > len(symbols) {
+			end = len(symbols)
+		}
+
+		// 在启动goroutine之前调用Add
+		wg.Add(1)
+
+		// 使用展开操作符将切片中的元素添加到结果中
+		go func(start, endIndex int) {
+			defer wg.Done() // 使用defer确保Done被调用
+
+			// 获取当前批次的数据
+			batchResult := GetSymbolsWithKlines_base(symbols[start:endIndex])
+
+			// 加锁保护共享数据
+			mu.Lock()
+			symbolsWithKlines = append(symbolsWithKlines, batchResult...)
+			mu.Unlock()
+		}(i, end)
+		time.Sleep(25 * time.Duration(p) * time.Millisecond)
+	}
+	wg.Wait()
+	return symbolsWithKlines
+}
+
+func GetSymbolsWithKlines_base(symbols []string) []*SymbolWithKlines {
 	var symbolsWithKlines []*SymbolWithKlines
 	var limit = 50
 	for _, symbol := range symbols {
-		time.Sleep(20 * time.Millisecond)
+		//time.Sleep(25 * time.Millisecond)
 		klines, err := fc.NewKlinesService().
 			Symbol(symbol).Interval("1d").
 			Limit(limit).Do(context.Background())

@@ -2,9 +2,7 @@ package main
 
 import (
 	"embed"
-	"os"
 
-	"github.com/adshao/go-binance/v2"
 	"github.com/adshao/go-binance/v2/futures"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -17,7 +15,6 @@ var assets embed.FS
 var fc *futures.Client
 
 func main() {
-	fc = binance.NewFuturesClient(os.Getenv("BINANCE_API_KEY"), os.Getenv("BINANCE_SECRET_KEY"))
 	// Create an instance of the app structure
 	app := NewApp()
 

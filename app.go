@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+
+	"github.com/adshao/go-binance/v2"
 )
 
 // App struct
@@ -13,6 +16,9 @@ type App struct {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
+	if fc == nil {
+		fc = binance.NewFuturesClient(os.Getenv("BINANCE_API_KEY"), os.Getenv("BINANCE_SECRET_KEY"))
+	}
 	return &App{}
 }
 
@@ -29,7 +35,7 @@ func (a *App) Greet(name string) string {
 
 // GetSuggestiveTrade 获取建议交易的币，包括做空或者做多，以及建议的价格
 func (a *App) GetSuggestiveTrade() ([]*SuggestiveTrade, error) {
-	ss, err := GetSymbolsList()
+	ss, err := GetSymbolsList1()
 	if err != nil {
 		return []*SuggestiveTrade{}, errors.New("no symbols list")
 	}
