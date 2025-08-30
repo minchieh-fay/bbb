@@ -135,7 +135,7 @@ func FilterSymbolsWithKlines(symbolsWithKlines []*SymbolWithKlines) []*Suggestiv
 			filteredSymbolsWithKlines = append(filteredSymbolsWithKlines, &SuggestiveTrade{
 				Symbol:      symbolWithKlines.Symbol,
 				Direction:   "sell",
-				Price:       k[0].Boll.Mid * 1.001,
+				Price:       k[0].Close * 1.001,
 				QuoteVolume: symbolWithKlines.QuoteVolume,
 			})
 			continue
@@ -144,7 +144,7 @@ func FilterSymbolsWithKlines(symbolsWithKlines []*SymbolWithKlines) []*Suggestiv
 			filteredSymbolsWithKlines = append(filteredSymbolsWithKlines, &SuggestiveTrade{
 				Symbol:      symbolWithKlines.Symbol,
 				Direction:   "buy",
-				Price:       k[0].Boll.Mid * 0.999,
+				Price:       k[0].Close * 0.999,
 				QuoteVolume: symbolWithKlines.QuoteVolume,
 			})
 			continue
